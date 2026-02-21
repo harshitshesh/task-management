@@ -4,7 +4,7 @@ const Taskdata = require("../models/Taskdata")
 
 exports.gettasks = async (req,res)=>{
     try{
-        const tasks = await Taskdata.find();
+        const tasks = await Taskdata.find({user: req.user._id});
         res.status(200).json(tasks)
     }catch(err){
         res.status(500).json({message:err.message})
@@ -38,6 +38,7 @@ exports.createtask = async (req,res)=>{
             title,
             description,
             completed,
+            user:req.user._id
         })
         res.status(201).json(task)
 

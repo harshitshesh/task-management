@@ -1,15 +1,16 @@
 
 const express = require("express")
 const { gettasks, gettask, createtask, updatetask, deletetask } = require("../controllers/taskscontroller")
+const { usertasksprotect } = require("../midlewhere/usertasksfind")
 
 const taskroute = express.Router()
 
 
-taskroute.get("/tasks",gettasks)
+taskroute.get("/tasks",usertasksprotect,gettasks)
 
 taskroute.get("/task/:id",gettask)
 
-taskroute.post("/addt",createtask)
+taskroute.post("/addt",usertasksprotect,createtask)
 
 taskroute.put("/updatet/:id",updatetask)
 

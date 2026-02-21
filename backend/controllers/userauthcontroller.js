@@ -6,6 +6,8 @@ const genratejwttoken = (id)=>{
     return jwt.sign({id},process.env.JWT_TOKEN,{
         expiresIn:"30d"
     })
+
+
 }
 
 
@@ -61,6 +63,7 @@ exports.login = async (req,res)=>{
             res.json({
                 _id: user._id,
                 username:user.username,
+                
                 email:user.email,
                 token: genratejwttoken(user._id)
             })

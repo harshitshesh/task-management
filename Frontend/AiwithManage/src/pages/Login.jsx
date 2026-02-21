@@ -1,0 +1,77 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { loginApi } from "../api/taskApi";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+
+export default function Login() {
+    const [form, setForm] = useState({ email: "", password: "" });
+    const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const data = await loginApi(form);
+            if (data.token) {
+                login(data);
+                addToast(`Welcome back, ${data.username}! 👋`, "success");
+                navigate("/dashboard");
+            } else {
+                addToast(data.message || "Login failed", "error");
+            }
+        } catch {
+            addToast("Server error. Please try again.", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="auth-page">
+            <div className="auth-bg-orbs">
+                <div className="orb orb-1" />
+                <div className="orb orb-2" />
+                <div className="orb orb-3" />
+            </div>
+            <div className="auth-card">
+                <div className="auth-logo">
+                    <div className="logo-icon">⚡</div>
+                    <h1>TaskFlow</h1>
+                    <p>Sign in to manage your tasks</p>
+                </div>
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="input-group">
+                        <span className="input-icon">✉</span>
+                        <input
+                            type="email"
+                            placeholder="Email Address"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div className="input-group">
+                        <span className="input-icon">🔒</span>
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={form.password}
+                            onChange={(e) => setForm({ ...form, password: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <button type="submit" className={`btn-primary ${loading ? "loading" : ""}`} disabled={loading}>
+                        {loading ? <span className="spinner" /> : "Sign In"}
+                    </button>
+                </form>
+                <p className="auth-link">
+                    Don't have an account? <Link to="/signup">Create Account</Link>
+                </p>
+            </div>
+        </div>
+    );
+}
