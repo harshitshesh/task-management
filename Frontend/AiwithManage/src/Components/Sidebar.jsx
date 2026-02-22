@@ -1,0 +1,144 @@
+import { useState } from "react";
+import { useTheme } from "../context/ThemeContext";
+import { useNotifications } from "../context/NotificationContext";
+
+const timeAgo = (date) => {
+    const diff = (Date.now() - new Date(date)) / 1000;
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
+};
+
+const typeIcon = (type) => {
+    if (type === "success") return "✅";
+    if (type === "error") return "❌";
+    if (type === "delete") return "🗑️";
+    if (type === "create") return "🎯";
+    return "ℹ️";
+};
+
+export default function Sidebar({ user, onLogout, onNewTask }) {
+    const { theme, toggleTheme } = useTheme();
+    const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
+    const [activePanel, setActivePanel] = useState(null); // null | "notifications"
+    const [collapsed, setCollapsed] = useState(false);
+
+    const handleBellClick = () => {
+        setActivePanel((p) => (p === "notifications" ? null : "notifications"));
+        markAllRead();
+    };
+
+    return (
+        <>
+            {/* Sidebar */}
+            <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
+                {/* Logo */}
+                <div className="sidebar-logo">
+                    {!collapsed && (
+                        <>
+                            <span className="sb-logo-icon">⚡</span>
+                            <span className="sb-logo-text">TaskFlow</span>
+                        </>
+                    )}
+                    {collapsed && <span className="sb-logo-icon">⚡</span>}
+                </div>
+
+                {/* Nav Items */}
+                <nav className="sidebar-nav">
+                    <button className="sb-nav-item active" title="Dashboard">
+                        <span className="sb-nav-icon">🏠</span>
+                        {!collapsed && <span className="sb-nav-label">Dashboard</span>}
+                    </button>
+
+                    <button className="sb-nav-item" onClick={onNewTask} title="New Task">
+                        <span className="sb-nav-icon">➕</span>
+                        {!collapsed && <span className="sb-nav-label">New Task</span>}
+                    </button>
+
+                    <button
+                        className={`sb-nav-item ${activePanel === "notifications" ? "active" : ""}`}
+                        onClick={handleBellClick}
+                        title="Notifications"
+                    >
+                        <span className="sb-nav-icon sb-bell-wrap">
+                            🔔
+                            {unreadCount > 0 && (
+                                <span className="sb-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+                            )}
+                        </span>
+                        {!collapsed && <span className="sb-nav-label">Notifications</span>}
+                    </button>
+                </nav>
+
+                {/* Bottom section */}
+                <div className="sidebar-bottom">
+                    {/* Theme Toggle */}
+                    <button className="sb-theme-btn" onClick={toggleTheme} title="Toggle theme">
+                        <span className="sb-theme-track">
+                            <span className={`sb-theme-thumb ${theme === "light" ? "sb-theme-thumb-light" : ""}`}></span>
+                        </span>
+                        {!collapsed && (
+                            <span className="sb-nav-label">{theme === "dark" ? "☀️ Light" : "🌙 Dark"}</span>
+                        )}
+                    </button>
+
+                    {/* User + Logout */}
+                    {user && (
+                        <div className="sb-user-section">
+                            <div className="sb-avatar">{user?.username?.[0]?.toUpperCase()}</div>
+                            {!collapsed && (
+                                <div className="sb-user-info">
+                                    <span className="sb-user-name">{user?.username}</span>
+                                    <button className="sb-logout-btn" onClick={onLogout}>Sign Out</button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Collapse toggle */}
+                    <button
+                        className="sb-collapse-btn"
+                        onClick={() => setCollapsed((c) => !c)}
+                        title={collapsed ? "Expand" : "Collapse"}
+                    >
+                        {collapsed ? "▶" : "◀"}
+                    </button>
+                </div>
+            </aside>
+
+            {/* Notifications Panel */}
+            {activePanel === "notifications" && (
+                <div className="notif-panel">
+                    <div className="notif-panel-header">
+                        <span>🔔 Notifications</span>
+                        <div className="notif-panel-actions">
+                            {notifications.length > 0 && (
+                                <button className="notif-clear-btn" onClick={clearAll}>Clear all</button>
+                            )}
+                            <button className="notif-close-btn" onClick={() => setActivePanel(null)}>✕</button>
+                        </div>
+                    </div>
+                    <div className="notif-list">
+                        {notifications.length === 0 ? (
+                            <div className="notif-empty">
+                                <span>📭</span>
+                                <p>No notifications yet</p>
+                            </div>
+                        ) : (
+                            notifications.map((n) => (
+                                <div key={n.id} className={`notif-item notif-${n.type}`}>
+                                    <span className="notif-icon">{typeIcon(n.type)}</span>
+                                    <div className="notif-body">
+                                        <p className="notif-msg">{n.message}</p>
+                                        <span className="notif-time">{timeAgo(n.time)}</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}

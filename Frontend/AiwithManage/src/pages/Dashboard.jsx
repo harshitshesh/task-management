@@ -1,24 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { useNotifications } from "../context/NotificationContext";
 import {
     getTasksApi,
     createTaskApi,
     updateTaskApi,
     deleteTaskApi,
 } from "../api/taskApi";
+import Sidebar from "../Components/Sidebar";
+import Pagination from "../Components/Pagination";
 
-const FILTERS = ["All", "Pending", "Completed"];
+const STATUS_FILTERS = ["All", "Pending", "Completed"];
+const ITEMS_PER_PAGE = 8;
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
     const { addToast } = useToast();
+    const { addNotification } = useNotifications();
     const navigate = useNavigate();
 
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
     const [showModal, setShowModal] = useState(false);
     const [editTask, setEditTask] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
@@ -38,6 +45,46 @@ export default function Dashboard() {
     };
 
     useEffect(() => { fetchTasks(); }, []);
+
+    // Derived counts
+    const completed = tasks.filter((t) => t.completed).length;
+    const pending = tasks.filter((t) => !t.completed).length;
+    const completionPct = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
+
+    // Filtered + searched tasks
+    const filtered = useMemo(() => {
+        let result = tasks;
+        if (filter === "Pending") result = result.filter((t) => !t.completed);
+        if (filter === "Completed") result = result.filter((t) => t.completed);
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(
+                (t) =>
+                    t.title.toLowerCase().includes(q) ||
+                    (t.description && t.description.toLowerCase().includes(q))
+            );
+        }
+        return result;
+    }, [tasks, filter, searchQuery]);
+
+    // Pagination
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const paginated = filtered.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    // Reset to page 1 when filter/search changes
+    useEffect(() => { setCurrentPage(1); }, [filter, searchQuery]);
+
+    // Highlight matched text
+    const highlight = (text, query) => {
+        if (!query.trim()) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+        return text.split(regex).map((part, i) =>
+            regex.test(part) ? <mark key={i} className="highlight">{part}</mark> : part
+        );
+    };
 
     const openCreate = () => {
         setEditTask(null);
@@ -62,6 +109,7 @@ export default function Dashboard() {
                 if (data._id) {
                     setTasks((prev) => prev.map((t) => (t._id === data._id ? data : t)));
                     addToast("Task updated successfully ✏️", "success");
+                    addNotification("Task updated: " + form.title, "success");
                     closeModal();
                 } else addToast(data.message || "Update failed", "error");
             } else {
@@ -69,6 +117,7 @@ export default function Dashboard() {
                 if (data._id) {
                     setTasks((prev) => [...prev, data]);
                     addToast("Task created! 🎯", "success");
+                    addNotification("New task created: " + form.title, "create");
                     closeModal();
                 } else addToast(data.message || "Create failed", "error");
             }
@@ -84,7 +133,9 @@ export default function Dashboard() {
             const data = await updateTaskApi(task._id, { ...task, completed: !task.completed });
             if (data._id) {
                 setTasks((prev) => prev.map((t) => (t._id === data._id ? data : t)));
-                addToast(data.completed ? "Task marked complete ✅" : "Task marked pending ⏳", "success");
+                const msg = data.completed ? "Task marked complete ✅" : "Task marked pending ⏳";
+                addToast(msg, "success");
+                addNotification(msg + ": " + task.title, data.completed ? "success" : "info");
             } else addToast(data.message || "Update failed", "error");
         } catch {
             addToast("Server error", "error");
@@ -92,10 +143,12 @@ export default function Dashboard() {
     };
 
     const handleDelete = async () => {
+        const task = tasks.find((t) => t._id === deleteId);
         try {
-            const data = await deleteTaskApi(deleteId);
+            await deleteTaskApi(deleteId);
             setTasks((prev) => prev.filter((t) => t._id !== deleteId));
             addToast("Task deleted 🗑️", "success");
+            addNotification("Task deleted: " + (task?.title || ""), "delete");
         } catch {
             addToast("Delete failed", "error");
         } finally {
@@ -109,132 +162,191 @@ export default function Dashboard() {
         navigate("/login");
     };
 
-    const filtered = tasks.filter((t) => {
-        if (filter === "Pending") return !t.completed;
-        if (filter === "Completed") return t.completed;
-        return true;
-    });
-    const completed = tasks.filter((t) => t.completed).length;
-    const pending = tasks.filter((t) => !t.completed).length;
-
     return (
-        <div className="dashboard">
-            {/* Navbar */}
-            <nav className="navbar">
-                <div className="nav-logo">
-                    <span className="logo-icon-sm">⚡</span>
-                    <span>TaskFlow</span>
-                </div>
-                <div className="nav-right">
-                    <div className="nav-user">
-                        <div className="avatar">{user?.username?.[0]?.toUpperCase()}</div>
-                        <span>{user?.username}</span>
-                    </div>
-                    <button className="btn-logout" onClick={handleLogout}>Sign Out</button>
-                </div>
-            </nav>
+        <div className="app-layout">
+            <Sidebar user={user} onLogout={handleLogout} onNewTask={openCreate} />
 
-            <main className="main-content">
-                {/* Hero Section */}
-                <div className="hero-section">
-                    <h2>Good day, <span className="gradient-text">{user?.username}</span> 👋</h2>
-                    <p>Here's your task overview for today</p>
+            <div className="dashboard">
+                {/* Background Orbs */}
+                <div className="dash-orbs" aria-hidden="true">
+                    <div className="dash-orb dash-orb-1" />
+                    <div className="dash-orb dash-orb-2" />
+                    <div className="dash-orb dash-orb-3" />
                 </div>
 
-                {/* Stats */}
-                <div className="stats-grid">
-                    <div className="stat-card stat-total">
-                        <div className="stat-icon">📋</div>
-                        <div className="stat-info">
-                            <span className="stat-num">{tasks.length}</span>
-                            <span className="stat-label">Total Tasks</span>
-                        </div>
-                    </div>
-                    <div className="stat-card stat-pending">
-                        <div className="stat-icon">⏳</div>
-                        <div className="stat-info">
-                            <span className="stat-num">{pending}</span>
-                            <span className="stat-label">Pending</span>
-                        </div>
-                    </div>
-                    <div className="stat-card stat-done">
-                        <div className="stat-icon">✅</div>
-                        <div className="stat-info">
-                            <span className="stat-num">{completed}</span>
-                            <span className="stat-label">Completed</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Tasks Section */}
-                <div className="tasks-section">
-                    <div className="tasks-header">
-                        <div className="filter-tabs">
-                            {FILTERS.map((f) => (
-                                <button
-                                    key={f}
-                                    className={`filter-tab ${filter === f ? "active" : ""}`}
-                                    onClick={() => setFilter(f)}
-                                >
-                                    {f}
-                                    <span className="tab-count">
-                                        {f === "All" ? tasks.length : f === "Pending" ? pending : completed}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                        <button className="btn-add" onClick={openCreate}>
-                            <span>+</span> New Task
-                        </button>
+                <main className="main-content">
+                    {/* Hero */}
+                    <div className="hero-section">
+                        <h2>Good day, <span className="gradient-text">{user?.username}</span> 👋</h2>
+                        <p>Here's your task overview for today</p>
                     </div>
 
-                    {loading ? (
-                        <div className="loading-state">
-                            <div className="loader" />
-                            <p>Loading tasks...</p>
-                        </div>
-                    ) : filtered.length === 0 ? (
-                        <div className="empty-state">
-                            <div className="empty-icon">📭</div>
-                            <h3>No tasks here</h3>
-                            <p>{filter === "All" ? "Create your first task to get started!" : `No ${filter.toLowerCase()} tasks`}</p>
-                            {filter === "All" && (
-                                <button className="btn-primary" onClick={openCreate}>Create Task</button>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="tasks-grid">
-                            {filtered.map((task) => (
-                                <div key={task._id} className={`task-card ${task.completed ? "completed" : ""}`}>
-                                    <div className="task-card-top">
-                                        <button
-                                            className={`check-btn ${task.completed ? "checked" : ""}`}
-                                            onClick={() => handleToggle(task)}
-                                            title="Toggle complete"
-                                        >
-                                            {task.completed ? "✓" : ""}
-                                        </button>
-                                        <div className="task-meta">
-                                            <span className={`badge ${task.completed ? "badge-done" : "badge-pending"}`}>
-                                                {task.completed ? "Completed" : "Pending"}
-                                            </span>
-                                            <span className="task-date">
-                                                {new Date(task.created).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                                            </span>
-                                        </div>
+                    {/* Stats — compact scrollable row */}
+                    <div className="stats-track-wrapper">
+                        <div className="stats-track">
+                            <div className="stat-card stat-total">
+                                <div className="stat-icon-3d">📋</div>
+                                <div className="stat-info">
+                                    <span className="stat-num">{tasks.length}</span>
+                                    <span className="stat-label">Total Tasks</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-pending">
+                                <div className="stat-icon-3d">⏳</div>
+                                <div className="stat-info">
+                                    <span className="stat-num">{pending}</span>
+                                    <span className="stat-label">Pending</span>
+                                </div>
+                            </div>
+                            <div className="stat-card stat-done">
+                                <div className="stat-icon-3d">✅</div>
+                                <div className="stat-info">
+                                    <span className="stat-num">{completed}</span>
+                                    <span className="stat-label">Completed</span>
+                                </div>
+                            </div>
+                            {/* Progress card */}
+                            <div className="stat-card stat-progress">
+                                <div className="stat-icon-3d">📈</div>
+                                <div className="stat-info stat-info-wide">
+                                    <div className="stat-progress-row">
+                                        <span className="stat-num">{completionPct}%</span>
+                                        <span className="stat-label">Done</span>
                                     </div>
-                                    <h3 className="task-title">{task.title}</h3>
-                                    <p className="task-desc">{task.description}</p>
-                                    <div className="task-actions">
-                                        <button className="btn-edit" onClick={() => openEdit(task)}>✏️ Edit</button>
-                                        <button className="btn-delete" onClick={() => setDeleteId(task._id)}>🗑️ Delete</button>
+                                    <div className="progress-bar-track">
+                                        <div
+                                            className="progress-bar-fill"
+                                            style={{ width: `${completionPct}%` }}
+                                        />
                                     </div>
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    )}
-                </div>
-            </main>
+                    </div>
+
+                    {/* Tasks Section */}
+                    <div className="tasks-section">
+                        <div className="tasks-header">
+                            <div className="tasks-header-top">
+                                <div className="filter-tabs">
+                                    {STATUS_FILTERS.map((f) => (
+                                        <button
+                                            key={f}
+                                            className={`filter-tab ${filter === f ? "active" : ""}`}
+                                            onClick={() => setFilter(f)}
+                                        >
+                                            {f}
+                                            <span className="tab-count">
+                                                {f === "All" ? tasks.length : f === "Pending" ? pending : completed}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                                <button className="btn-add" onClick={openCreate}>
+                                    <span>+</span> New Task
+                                </button>
+                            </div>
+
+                            {/* Search Bar */}
+                            <div className="search-bar-wrapper">
+                                <span className="search-icon">🔍</span>
+                                <input
+                                    type="text"
+                                    className="search-bar"
+                                    placeholder="Search tasks by title or description..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                {searchQuery && (
+                                    <button className="search-clear" onClick={() => setSearchQuery("")}>✕</button>
+                                )}
+                            </div>
+
+                            {/* Results info */}
+                            {(searchQuery || filter !== "All") && (
+                                <p className="results-info">
+                                    Showing <strong>{filtered.length}</strong> result{filtered.length !== 1 ? "s" : ""}
+                                    {searchQuery && <> for "<em>{searchQuery}</em>"</>}
+                                    {filter !== "All" && <> · <strong>{filter}</strong></>}
+                                </p>
+                            )}
+                        </div>
+
+                        {loading ? (
+                            <div className="loading-state">
+                                <div className="loader" />
+                                <p>Loading tasks...</p>
+                            </div>
+                        ) : filtered.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">{searchQuery ? "🔍" : "📭"}</div>
+                                <h3>{searchQuery ? "No results found" : "No tasks here"}</h3>
+                                <p>
+                                    {searchQuery
+                                        ? `No tasks match "${searchQuery}"`
+                                        : filter === "All"
+                                            ? "Create your first task to get started!"
+                                            : `No ${filter.toLowerCase()} tasks`}
+                                </p>
+                                {!searchQuery && filter === "All" && (
+                                    <button className="btn-primary" onClick={openCreate}>Create Task</button>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                <div className="tasks-grid">
+                                    {paginated.map((task, index) => (
+                                        <div
+                                            key={task._id}
+                                            className={`task-card ${task.completed ? "completed" : ""}`}
+                                            style={{ animationDelay: `${index * 0.06}s` }}
+                                        >
+                                            <div className="task-card-3d-inner">
+                                                <div className="task-card-top">
+                                                    <button
+                                                        className={`check-btn ${task.completed ? "checked" : ""}`}
+                                                        onClick={() => handleToggle(task)}
+                                                        title="Toggle complete"
+                                                    >
+                                                        {task.completed ? "✓" : ""}
+                                                    </button>
+                                                    <div className="task-meta">
+                                                        <span className={`badge ${task.completed ? "badge-done" : "badge-pending"}`}>
+                                                            {task.completed ? "Completed" : "Pending"}
+                                                        </span>
+                                                        <span className="task-date">
+                                                            {new Date(task.created).toLocaleDateString("en-US", {
+                                                                month: "short",
+                                                                day: "numeric",
+                                                            })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <h3 className="task-title">
+                                                    {highlight(task.title, searchQuery)}
+                                                </h3>
+                                                <p className="task-desc">
+                                                    {highlight(task.description || "", searchQuery)}
+                                                </p>
+                                                <div className="task-actions">
+                                                    <button className="btn-edit" onClick={() => openEdit(task)}>✏️ Edit</button>
+                                                    <button className="btn-delete" onClick={() => setDeleteId(task._id)}>🗑️ Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    onPageChange={setCurrentPage}
+                                />
+                            </>
+                        )}
+                    </div>
+                </main>
+            </div>
 
             {/* Create/Edit Modal */}
             {showModal && (
