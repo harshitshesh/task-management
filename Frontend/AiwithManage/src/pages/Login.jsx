@@ -31,46 +31,52 @@ export default function Login() {
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-bg-orbs">
-                <div className="orb orb-1" />
-                <div className="orb orb-2" />
-                <div className="orb orb-3" />
-            </div>
-            <div className="auth-card">
-                <div className="auth-logo">
-                    <div className="logo-icon">⚡</div>
-                    <h1>TaskFlow</h1>
-                    <p>Sign in to manage your tasks</p>
+        <div className="auth-page auth-page-split">
+            <div className="auth-left">
+                <div className="auth-card">
+                    <div className="auth-logo">
+                        <div className="logo-icon">⚡</div>
+                        <h1>TaskFlow</h1>
+                        <p>Sign in to manage your tasks</p>
+                    </div>
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="input-group">
+                            <span className="input-icon">✉</span>
+                            <input
+                                type="email"
+                                placeholder="Email Address"
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="input-group">
+                            <span className="input-icon">🔒</span>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className={`btn-primary ${loading ? "loading" : ""}`} disabled={loading}>
+                            {loading ? <span className="spinner" /> : "Sign In"}
+                        </button>
+                    </form>
+                    <p className="auth-link">
+                        Don't have an account? <Link to="/signup">Create Account</Link>
+                    </p>
                 </div>
-                <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="input-group">
-                        <span className="input-icon">✉</span>
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            required
-                        />
+            </div>
+            <div className="auth-right">
+                <div className="animated-visual">
+                    <div className="visual-element el-1">🚀 Productivity First</div>
+                    <div className="visual-element el-2">📅 Master your Day</div>
+                    <div className="visual-image">
+                        <span style={{ fontSize: '150px' }}>🎯</span>
                     </div>
-                    <div className="input-group">
-                        <span className="input-icon">🔒</span>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={form.password}
-                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className={`btn-primary ${loading ? "loading" : ""}`} disabled={loading}>
-                        {loading ? <span className="spinner" /> : "Sign In"}
-                    </button>
-                </form>
-                <p className="auth-link">
-                    Don't have an account? <Link to="/signup">Create Account</Link>
-                </p>
+                </div>
             </div>
         </div>
     );

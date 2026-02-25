@@ -11,6 +11,7 @@ import {
 } from "../api/taskApi";
 import Sidebar from "../Components/Sidebar";
 import Pagination from "../Components/Pagination";
+import Chatbot from "../Components/Chatbot";
 
 const STATUS_FILTERS = ["All", "Pending", "Completed"];
 const ITEMS_PER_PAGE = 8;
@@ -29,8 +30,11 @@ export default function Dashboard() {
     const [showModal, setShowModal] = useState(false);
     const [editTask, setEditTask] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
     const [form, setForm] = useState({ title: "", description: "", completed: false });
     const [saving, setSaving] = useState(false);
+    const [showStats, setShowStats] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const fetchTasks = async () => {
         try {
@@ -166,7 +170,35 @@ export default function Dashboard() {
         <div className="app-layout">
             <Sidebar user={user} onLogout={handleLogout} onNewTask={openCreate} />
 
-            <div className="dashboard">
+            <div className={`dashboard ${mobileMenuOpen ? 'mobile-menu-active' : ''}`}>
+                {/* Mobile Navbar */}
+                <header className="mobile-navbar">
+                    <div className="mobile-nav-left">
+                        <span className="mb-logo-icon">⚡</span>
+                        <span className="mb-logo-text">TaskFlow</span>
+                    </div>
+                    <button
+                        className="mobile-nav-toggle"
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    >
+                        {mobileMenuOpen ? "✕" : "☰"}
+                    </button>
+                </header>
+
+                {/* Mobile Sidebar Overlay */}
+                {mobileMenuOpen && (
+                    <div className="mobile-sidebar-overlay" onClick={() => setMobileMenuOpen(false)}>
+                        <div className="mobile-sidebar" onClick={(e) => e.stopPropagation()}>
+                            <button className="mobile-sidebar-close" onClick={() => setMobileMenuOpen(false)}>✕</button>
+                            <Sidebar
+                                user={user}
+                                onLogout={handleLogout}
+                                onNewTask={() => { openCreate(); setMobileMenuOpen(false); }}
+                                isMobile={true}
+                            />
+                        </div>
+                    </div>
+                )}
                 {/* Background Orbs */}
                 <div className="dash-orbs" aria-hidden="true">
                     <div className="dash-orb dash-orb-1" />
@@ -175,101 +207,112 @@ export default function Dashboard() {
                 </div>
 
                 <main className="main-content">
-                    {/* Hero */}
-                    <div className="hero-section">
-                        <h2>Good day, <span className="gradient-text">{user?.username}</span> 👋</h2>
-                        <p>Here's your task overview for today</p>
-                    </div>
+                    {/* Hero area (Not Sticky) */}
+                    <div className="dashboard-hero-area">
+                        <div className="stats-header">
+                            <div className="hero-section">
+                                <h2>Good day, <span className="gradient-text">{user?.username}</span> 👋</h2>
+                                <p>Here's your task overview for today</p>
+                            </div>
+                            <button
+                                className={`btn-track ${showStats ? 'active' : ''}`}
+                                onClick={() => setShowStats(!showStats)}
+                            >
+                                {showStats ? 'Hiding' : 'Track'} 🛰️
+                            </button>
+                        </div>
 
-                    {/* Stats — compact scrollable row */}
-                    <div className="stats-track-wrapper">
-                        <div className="stats-track">
-                            <div className="stat-card stat-total">
-                                <div className="stat-icon-3d">📋</div>
-                                <div className="stat-info">
-                                    <span className="stat-num">{tasks.length}</span>
-                                    <span className="stat-label">Total Tasks</span>
-                                </div>
-                            </div>
-                            <div className="stat-card stat-pending">
-                                <div className="stat-icon-3d">⏳</div>
-                                <div className="stat-info">
-                                    <span className="stat-num">{pending}</span>
-                                    <span className="stat-label">Pending</span>
-                                </div>
-                            </div>
-                            <div className="stat-card stat-done">
-                                <div className="stat-icon-3d">✅</div>
-                                <div className="stat-info">
-                                    <span className="stat-num">{completed}</span>
-                                    <span className="stat-label">Completed</span>
-                                </div>
-                            </div>
-                            {/* Progress card */}
-                            <div className="stat-card stat-progress">
-                                <div className="stat-icon-3d">📈</div>
-                                <div className="stat-info stat-info-wide">
-                                    <div className="stat-progress-row">
-                                        <span className="stat-num">{completionPct}%</span>
-                                        <span className="stat-label">Done</span>
+                        {/* Stats — compact scrollable row */}
+                        <div className={`stats-track-wrapper ${showStats ? '' : 'hidden'}`}>
+                            <div className="stats-track">
+                                <div className="stat-card stat-total">
+                                    <div className="stat-icon-3d">📋</div>
+                                    <div className="stat-info">
+                                        <span className="stat-num">{tasks.length}</span>
+                                        <span className="stat-label">Total Tasks</span>
                                     </div>
-                                    <div className="progress-bar-track">
-                                        <div
-                                            className="progress-bar-fill"
-                                            style={{ width: `${completionPct}%` }}
-                                        />
+                                </div>
+                                <div className="stat-card stat-pending">
+                                    <div className="stat-icon-3d">⏳</div>
+                                    <div className="stat-info">
+                                        <span className="stat-num">{pending}</span>
+                                        <span className="stat-label">Pending</span>
+                                    </div>
+                                </div>
+                                <div className="stat-card stat-done">
+                                    <div className="stat-icon-3d">✅</div>
+                                    <div className="stat-info">
+                                        <span className="stat-num">{completed}</span>
+                                        <span className="stat-label">Completed</span>
+                                    </div>
+                                </div>
+                                {/* Progress card */}
+                                <div className="stat-card stat-progress">
+                                    <div className="stat-icon-3d">📈</div>
+                                    <div className="stat-info stat-info-wide">
+                                        <div className="stat-progress-row">
+                                            <span className="stat-num">{completionPct}%</span>
+                                            <span className="stat-label">Done</span>
+                                        </div>
+                                        <div className="progress-bar-track">
+                                            <div
+                                                className="progress-bar-fill"
+                                                style={{ width: `${completionPct}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Tasks Section */}
-                    <div className="tasks-section">
-                        <div className="tasks-header">
-                            <div className="tasks-header-top">
-                                <div className="filter-tabs">
-                                    {STATUS_FILTERS.map((f) => (
-                                        <button
-                                            key={f}
-                                            className={`filter-tab ${filter === f ? "active" : ""}`}
-                                            onClick={() => setFilter(f)}
-                                        >
-                                            {f}
-                                            <span className="tab-count">
-                                                {f === "All" ? tasks.length : f === "Pending" ? pending : completed}
-                                            </span>
-                                        </button>
-                                    ))}
+                        {/* Sticky Header Section (Search & Filters Only) */}
+                        <div className="dashboard-sticky-part">
+                            {/* Tasks Header (Filter + New + Search) */}
+                            <div className="tasks-header">
+                                <div className="tasks-header-top">
+                                    <div className="filter-tabs">
+                                        {STATUS_FILTERS.map((f) => (
+                                            <button
+                                                key={f}
+                                                className={`filter-tab ${filter === f ? "active" : ""}`}
+                                                onClick={() => setFilter(f)}
+                                            >
+                                                {f}
+                                                <span className="tab-count">
+                                                    {f === "All" ? tasks.length : f === "Pending" ? pending : completed}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button className="btn-add" onClick={openCreate}>
+                                        <span>+</span> New Task
+                                    </button>
                                 </div>
-                                <button className="btn-add" onClick={openCreate}>
-                                    <span>+</span> New Task
-                                </button>
-                            </div>
 
-                            {/* Search Bar */}
-                            <div className="search-bar-wrapper">
-                                <span className="search-icon">🔍</span>
-                                <input
-                                    type="text"
-                                    className="search-bar"
-                                    placeholder="Search tasks by title or description..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                {searchQuery && (
-                                    <button className="search-clear" onClick={() => setSearchQuery("")}>✕</button>
+                                {/* Search Bar */}
+                                <div className="search-bar-wrapper">
+                                    <span className="search-icon">🔍</span>
+                                    <input
+                                        type="text"
+                                        className="search-bar"
+                                        placeholder="Search tasks by title or description..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                    {searchQuery && (
+                                        <button className="search-clear" onClick={() => setSearchQuery("")}>✕</button>
+                                    )}
+                                </div>
+
+                                {/* Results info */}
+                                {(searchQuery || filter !== "All") && (
+                                    <p className="results-info">
+                                        Showing <strong>{filtered.length}</strong> result{filtered.length !== 1 ? "s" : ""}
+                                        {searchQuery && <> for "<em>{searchQuery}</em>"</>}
+                                        {filter !== "All" && <> · <strong>{filter}</strong></>}
+                                    </p>
                                 )}
                             </div>
-
-                            {/* Results info */}
-                            {(searchQuery || filter !== "All") && (
-                                <p className="results-info">
-                                    Showing <strong>{filtered.length}</strong> result{filtered.length !== 1 ? "s" : ""}
-                                    {searchQuery && <> for "<em>{searchQuery}</em>"</>}
-                                    {filter !== "All" && <> · <strong>{filter}</strong></>}
-                                </p>
-                            )}
                         </div>
 
                         {loading ? (
@@ -302,35 +345,59 @@ export default function Dashboard() {
                                             style={{ animationDelay: `${index * 0.06}s` }}
                                         >
                                             <div className="task-card-3d-inner">
-                                                <div className="task-card-top">
-                                                    <button
-                                                        className={`check-btn ${task.completed ? "checked" : ""}`}
-                                                        onClick={() => handleToggle(task)}
-                                                        title="Toggle complete"
-                                                    >
-                                                        {task.completed ? "✓" : ""}
-                                                    </button>
-                                                    <div className="task-meta">
-                                                        <span className={`badge ${task.completed ? "badge-done" : "badge-pending"}`}>
-                                                            {task.completed ? "Completed" : "Pending"}
-                                                        </span>
-                                                        <span className="task-date">
-                                                            {new Date(task.created).toLocaleDateString("en-US", {
-                                                                month: "short",
-                                                                day: "numeric",
-                                                            })}
-                                                        </span>
+                                                <div className="task-card-content">
+                                                    <div className="task-card-top">
+                                                        <button
+                                                            className={`check-btn ${task.completed ? "checked" : ""}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleToggle(task);
+                                                            }}
+                                                            title="Toggle complete"
+                                                        >
+                                                            {task.completed ? "✓" : ""}
+                                                        </button>
+                                                        <div className="task-meta">
+                                                            <span className={`badge ${task.completed ? "badge-done" : "badge-pending"}`}>
+                                                                {task.completed ? "Completed" : "Pending"}
+                                                            </span>
+                                                            <span className="task-date">
+                                                                {new Date(task.created).toLocaleDateString("en-US", {
+                                                                    month: "short",
+                                                                    day: "numeric",
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="task-card-body">
+                                                        <h3 className="task-title">
+                                                            {highlight(task.title, searchQuery)}
+                                                        </h3>
+                                                        <p className="task-desc">
+                                                            {highlight(task.description || "", searchQuery)}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="task-actions">
+                                                        <button className="btn-edit" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openEdit(task);
+                                                        }}>✏️ Edit</button>
+                                                        <button className="btn-delete" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteId(task._id);
+                                                        }}>🗑️ Delete</button>
                                                     </div>
                                                 </div>
-                                                <h3 className="task-title">
-                                                    {highlight(task.title, searchQuery)}
-                                                </h3>
-                                                <p className="task-desc">
-                                                    {highlight(task.description || "", searchQuery)}
-                                                </p>
-                                                <div className="task-actions">
-                                                    <button className="btn-edit" onClick={() => openEdit(task)}>✏️ Edit</button>
-                                                    <button className="btn-delete" onClick={() => setDeleteId(task._id)}>🗑️ Delete</button>
+
+                                                <div className="task-read-overlay">
+                                                    <button
+                                                        className="btn-read-task"
+                                                        onClick={() => setSelectedTask(task)}
+                                                    >
+                                                        Read Task 🔍
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -349,70 +416,112 @@ export default function Dashboard() {
             </div>
 
             {/* Create/Edit Modal */}
-            {showModal && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>{editTask ? "Edit Task" : "Create New Task"}</h2>
-                            <button className="modal-close" onClick={closeModal}>×</button>
+            {
+                showModal && (
+                    <div className="modal-overlay" onClick={closeModal}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>{editTask ? "Edit Task" : "Create New Task"}</h2>
+                                <button className="modal-close" onClick={closeModal}>×</button>
+                            </div>
+                            <form onSubmit={handleSave} className="modal-form">
+                                <div className="form-group">
+                                    <label>Title</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter task title..."
+                                        value={form.title}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <textarea
+                                        placeholder="Describe the task..."
+                                        value={form.description}
+                                        onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                        required
+                                        rows={4}
+                                    />
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                        type="checkbox"
+                                        id="completed"
+                                        checked={form.completed}
+                                        onChange={(e) => setForm({ ...form, completed: e.target.checked })}
+                                    />
+                                    <label htmlFor="completed">Mark as completed</label>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
+                                    <button type="submit" className={`btn-primary ${saving ? "loading" : ""}`} disabled={saving}>
+                                        {saving ? <span className="spinner" /> : editTask ? "Save Changes" : "Create Task"}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                        <form onSubmit={handleSave} className="modal-form">
-                            <div className="form-group">
-                                <label>Title</label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter task title..."
-                                    value={form.title}
-                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Description</label>
-                                <textarea
-                                    placeholder="Describe the task..."
-                                    value={form.description}
-                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                    required
-                                    rows={4}
-                                />
-                            </div>
-                            <div className="form-check">
-                                <input
-                                    type="checkbox"
-                                    id="completed"
-                                    checked={form.completed}
-                                    onChange={(e) => setForm({ ...form, completed: e.target.checked })}
-                                />
-                                <label htmlFor="completed">Mark as completed</label>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn-cancel" onClick={closeModal}>Cancel</button>
-                                <button type="submit" className={`btn-primary ${saving ? "loading" : ""}`} disabled={saving}>
-                                    {saving ? <span className="spinner" /> : editTask ? "Save Changes" : "Create Task"}
-                                </button>
-                            </div>
-                        </form>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Delete Confirm */}
-            {deleteId && (
-                <div className="modal-overlay" onClick={() => setDeleteId(null)}>
-                    <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>Delete Task?</h2>
-                            <button className="modal-close" onClick={() => setDeleteId(null)}>×</button>
-                        </div>
-                        <p className="confirm-text">This action cannot be undone. Are you sure?</p>
-                        <div className="modal-footer">
-                            <button className="btn-cancel" onClick={() => setDeleteId(null)}>Cancel</button>
-                            <button className="btn-danger" onClick={handleDelete}>Delete</button>
+            {
+                deleteId && (
+                    <div className="modal-overlay" onClick={() => setDeleteId(null)}>
+                        <div className="modal modal-sm" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h2>Delete Task?</h2>
+                                <button className="modal-close" onClick={() => setDeleteId(null)}>×</button>
+                            </div>
+                            <p className="confirm-text">This action cannot be undone. Are you sure?</p>
+                            <div className="modal-footer">
+                                <button className="btn-cancel" onClick={() => setDeleteId(null)}>Cancel</button>
+                                <button className="btn-danger" onClick={handleDelete}>Delete</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {/* Task Details Modal */}
+            {
+                selectedTask && (
+                    <div className="modal-overlay" onClick={() => setSelectedTask(null)}>
+                        <div className="modal modal-lg task-detail-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <div className="task-detail-header">
+                                    <span className={`badge ${selectedTask.completed ? "badge-done" : "badge-pending"}`}>
+                                        {selectedTask.completed ? "Completed" : "Pending"}
+                                    </span>
+                                    <h2>Task Details</h2>
+                                </div>
+                                <button className="modal-close" onClick={() => setSelectedTask(null)}>×</button>
+                            </div>
+                            <div className="task-detail-body">
+                                <h1 className="task-detail-title">{selectedTask.title}</h1>
+                                <div className="task-detail-info">
+                                    <span className="info-item">📅 Created: {new Date(selectedTask.created).toLocaleString()}</span>
+                                    {selectedTask.updated && (
+                                        <span className="info-item">✏️ Updated: {new Date(selectedTask.updated).toLocaleString()}</span>
+                                    )}
+                                </div>
+                                <div className="task-detail-desc-label">Description</div>
+                                <div className="task-detail-description">
+                                    {selectedTask.description || "No description provided."}
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn-primary" onClick={() => setSelectedTask(null)}>Close</button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Chatbot */}
+            <Chatbot />
+        </div >
     );
 }

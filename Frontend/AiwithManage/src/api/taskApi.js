@@ -18,9 +18,9 @@ export const signupApi = (data) =>
 export const loginApi = (data) =>
   fetch(`${BASE}/auth/login`, {
     method: "POST",
-    headers: headers(), 
+    headers: headers(),
     body: JSON.stringify(data),
-  }).then((r) => r.json()) .then(data => {
+  }).then((r) => r.json()).then(data => {
     localStorage.setItem("token", data.token)
     return data;
   });
@@ -36,12 +36,12 @@ export const getTaskApi = (id) =>
     r.json()
   );
 
-  export const createTaskApi = (data) =>
-    fetch(`${BASE}/taskmanage/addt`, {
-      method: "POST",
-      headers: headers(true),
-      body: JSON.stringify(data),
-    }).then((r) => r.json());
+export const createTaskApi = (data) =>
+  fetch(`${BASE}/taskmanage/addt`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify(data),
+  }).then((r) => r.json());
 
 export const updateTaskApi = (id, data) =>
   fetch(`${BASE}/taskmanage/updatet/${id}`, {
@@ -54,4 +54,11 @@ export const deleteTaskApi = (id) =>
   fetch(`${BASE}/taskmanage/deletet/${id}`, {
     method: "DELETE",
     headers: headers(true),
+  }).then((r) => r.json());
+
+export const chatbotApi = (message) =>
+  fetch(`${BASE}/chatbot/chat`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ message }),
   }).then((r) => r.json());

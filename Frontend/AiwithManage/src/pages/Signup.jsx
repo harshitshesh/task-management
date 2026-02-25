@@ -31,56 +31,62 @@ export default function Signup() {
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-bg-orbs">
-                <div className="orb orb-1" />
-                <div className="orb orb-2" />
-                <div className="orb orb-3" />
-            </div>
-            <div className="auth-card">
-                <div className="auth-logo">
-                    <div className="logo-icon">⚡</div>
-                    <h1>TaskFlow</h1>
-                    <p>Create your free account</p>
+        <div className="auth-page auth-page-split">
+            <div className="auth-left">
+                <div className="auth-card">
+                    <div className="auth-logo">
+                        <div className="logo-icon">⚡</div>
+                        <h1>TaskFlow</h1>
+                        <p>Create your free account</p>
+                    </div>
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="input-group">
+                            <span className="input-icon">👤</span>
+                            <input
+                                type="text"
+                                placeholder="Username"
+                                value={form.username}
+                                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="input-group">
+                            <span className="input-icon">✉</span>
+                            <input
+                                type="email"
+                                placeholder="Email Address"
+                                value={form.email}
+                                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="input-group">
+                            <span className="input-icon">🔒</span>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={form.password}
+                                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className={`btn-primary ${loading ? "loading" : ""}`} disabled={loading}>
+                            {loading ? <span className="spinner" /> : "Create Account"}
+                        </button>
+                    </form>
+                    <p className="auth-link">
+                        Already have an account? <Link to="/login">Sign In</Link>
+                    </p>
                 </div>
-                <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="input-group">
-                        <span className="input-icon">👤</span>
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            value={form.username}
-                            onChange={(e) => setForm({ ...form, username: e.target.value })}
-                            required
-                        />
+            </div>
+            <div className="auth-right">
+                <div className="animated-visual">
+                    <div className="visual-element el-1">✨ Join the elite</div>
+                    <div className="visual-element el-2">🚀 Faster Workflow</div>
+                    <div className="visual-image">
+                        <span style={{ fontSize: '150px' }}>⚡</span>
                     </div>
-                    <div className="input-group">
-                        <span className="input-icon">✉</span>
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            value={form.email}
-                            onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="input-group">
-                        <span className="input-icon">🔒</span>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={form.password}
-                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <button type="submit" className={`btn-primary ${loading ? "loading" : ""}`} disabled={loading}>
-                        {loading ? <span className="spinner" /> : "Create Account"}
-                    </button>
-                </form>
-                <p className="auth-link">
-                    Already have an account? <Link to="/login">Sign In</Link>
-                </p>
+                </div>
             </div>
         </div>
     );

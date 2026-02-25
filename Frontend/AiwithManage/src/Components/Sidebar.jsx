@@ -18,7 +18,7 @@ const typeIcon = (type) => {
     return "ℹ️";
 };
 
-export default function Sidebar({ user, onLogout, onNewTask }) {
+export default function Sidebar({ user, onLogout, onNewTask, isMobile }) {
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAllRead, clearAll } = useNotifications();
     const [activePanel, setActivePanel] = useState(null); // null | "notifications"
@@ -32,28 +32,28 @@ export default function Sidebar({ user, onLogout, onNewTask }) {
     return (
         <>
             {/* Sidebar */}
-            <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}>
+            <aside className={`sidebar ${collapsed ? "sidebar-collapsed" : ""} ${isMobile ? "mobile-sidebar-view" : ""}`}>
                 {/* Logo */}
                 <div className="sidebar-logo">
-                    {!collapsed && (
+                    {(!collapsed || isMobile) && (
                         <>
                             <span className="sb-logo-icon">⚡</span>
                             <span className="sb-logo-text">TaskFlow</span>
                         </>
                     )}
-                    {collapsed && <span className="sb-logo-icon">⚡</span>}
+                    {collapsed && !isMobile && <span className="sb-logo-icon">⚡</span>}
                 </div>
 
                 {/* Nav Items */}
                 <nav className="sidebar-nav">
                     <button className="sb-nav-item active" title="Dashboard">
                         <span className="sb-nav-icon">🏠</span>
-                        {!collapsed && <span className="sb-nav-label">Dashboard</span>}
+                        {(!collapsed || isMobile) && <span className="sb-nav-label">Dashboard</span>}
                     </button>
 
                     <button className="sb-nav-item" onClick={onNewTask} title="New Task">
                         <span className="sb-nav-icon">➕</span>
-                        {!collapsed && <span className="sb-nav-label">New Task</span>}
+                        {(!collapsed || isMobile) && <span className="sb-nav-label">New Task</span>}
                     </button>
 
                     <button
@@ -67,44 +67,63 @@ export default function Sidebar({ user, onLogout, onNewTask }) {
                                 <span className="sb-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
                             )}
                         </span>
-                        {!collapsed && <span className="sb-nav-label">Notifications</span>}
+                        {(!collapsed || isMobile) && <span className="sb-nav-label">Notifications</span>}
                     </button>
+
+                    {/* Move mobile items here */}
+                    {isMobile && (
+                        <>
+                            <button className="sb-nav-item sb-theme-mobile" onClick={toggleTheme} title="Toggle theme">
+                                <span className="sb-nav-icon">{theme === "dark" ? "☀️" : "🌙"}</span>
+                                <span className="sb-nav-label">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                            </button>
+
+                            {user && (
+                                <button className="sb-nav-item sb-logout-mobile" onClick={onLogout} title="Sign Out">
+                                    <span className="sb-nav-icon">🚪</span>
+                                    <span className="sb-nav-label">Sign Out</span>
+                                </button>
+                            )}
+                        </>
+                    )}
                 </nav>
 
-                {/* Bottom section */}
-                <div className="sidebar-bottom">
-                    {/* Theme Toggle */}
-                    <button className="sb-theme-btn" onClick={toggleTheme} title="Toggle theme">
-                        <span className="sb-theme-track">
-                            <span className={`sb-theme-thumb ${theme === "light" ? "sb-theme-thumb-light" : ""}`}></span>
-                        </span>
-                        {!collapsed && (
-                            <span className="sb-nav-label">{theme === "dark" ? "☀️ Light" : "🌙 Dark"}</span>
-                        )}
-                    </button>
-
-                    {/* User + Logout */}
-                    {user && (
-                        <div className="sb-user-section">
-                            <div className="sb-avatar">{user?.username?.[0]?.toUpperCase()}</div>
+                {/* Bottom section - hidden or limited in mobile */}
+                {!isMobile && (
+                    <div className="sidebar-bottom">
+                        {/* Theme Toggle */}
+                        <button className="sb-theme-btn" onClick={toggleTheme} title="Toggle theme">
+                            <span className="sb-theme-track">
+                                <span className={`sb-theme-thumb ${theme === "light" ? "sb-theme-thumb-light" : ""}`}></span>
+                            </span>
                             {!collapsed && (
-                                <div className="sb-user-info">
-                                    <span className="sb-user-name">{user?.username}</span>
-                                    <button className="sb-logout-btn" onClick={onLogout}>Sign Out</button>
-                                </div>
+                                <span className="sb-nav-label">{theme === "dark" ? "☀️ Light" : "🌙 Dark"}</span>
                             )}
-                        </div>
-                    )}
+                        </button>
 
-                    {/* Collapse toggle */}
-                    <button
-                        className="sb-collapse-btn"
-                        onClick={() => setCollapsed((c) => !c)}
-                        title={collapsed ? "Expand" : "Collapse"}
-                    >
-                        {collapsed ? "▶" : "◀"}
-                    </button>
-                </div>
+                        {/* User + Logout */}
+                        {user && (
+                            <div className="sb-user-section">
+                                <div className="sb-avatar">{user?.username?.[0]?.toUpperCase()}</div>
+                                {!collapsed && (
+                                    <div className="sb-user-info">
+                                        <span className="sb-user-name">{user?.username}</span>
+                                        <button className="sb-logout-btn" onClick={onLogout}>Sign Out</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Collapse toggle */}
+                        <button
+                            className="sb-collapse-btn"
+                            onClick={() => setCollapsed((c) => !c)}
+                            title={collapsed ? "Expand" : "Collapse"}
+                        >
+                            {collapsed ? "▶" : "◀"}
+                        </button>
+                    </div>
+                )}
             </aside>
 
             {/* Notifications Panel */}
