@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { loginApi } from "../api/taskApi";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { LockKeyhole, Mail } from "lucide-react";
 
 export default function Login() {
     const [form, setForm] = useState({ email: "", password: "" });
@@ -31,17 +32,17 @@ export default function Login() {
     };
 
     return (
-        <div className="auth-page auth-page-split">
+        <div className="auth-page auth-page-split ">
             <div className="auth-left">
                 <div className="auth-card">
                     <div className="auth-logo">
-                        <div className="logo-icon">⚡</div>
-                        <h1>TaskFlow</h1>
+                        <div className="logo-icon"><img className="h-[10vw] w-[10vw] invert"  src="./public/tasklogo.png" alt="logo image"/></div>
+                        <h1>TaskManagement</h1>
                         <p>Sign in to manage your tasks</p>
                     </div>
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="input-group">
-                            <span className="input-icon">✉</span>
+                            <span className="input-icon"><Mail  size={15}/></span>
                             <input
                                 type="email"
                                 placeholder="Email Address"
@@ -51,7 +52,7 @@ export default function Login() {
                             />
                         </div>
                         <div className="input-group">
-                            <span className="input-icon">🔒</span>
+                            <span className="input-icon "><LockKeyhole fill="yellow" size={15}/></span>
                             <input
                                 type="password"
                                 placeholder="Password"
@@ -64,6 +65,7 @@ export default function Login() {
                             {loading ? <span className="spinner" /> : "Sign In"}
                         </button>
                     </form>
+                    
                     <p className="auth-link">
                         Don't have an account? <Link to="/signup">Create Account</Link>
                     </p>
@@ -71,10 +73,10 @@ export default function Login() {
             </div>
             <div className="auth-right">
                 <div className="animated-visual">
-                    <div className="visual-element el-1">🚀 Productivity First</div>
+                    <div className="visual-element el-1">🚀 Work Smarter Daily</div>
                     <div className="visual-element el-2">📅 Master your Day</div>
                     <div className="visual-image">
-                        <span style={{ fontSize: '150px' }}>🎯</span>
+                        <span className="absolute m- top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="./public/tasksmanage-logo.png" alt="logo image"/></span>
                     </div>
                 </div>
             </div>

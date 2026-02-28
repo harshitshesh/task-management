@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useNotifications } from "../context/NotificationContext";
+import { Trash } from 'lucide-react';
 
 const timeAgo = (date) => {
     const diff = (Date.now() - new Date(date)) / 1000;
@@ -13,7 +14,7 @@ const timeAgo = (date) => {
 const typeIcon = (type) => {
     if (type === "success") return "✅";
     if (type === "error") return "❌";
-    if (type === "delete") return "🗑️";
+    if (type === "delete") return <Trash fill="white" size={48} color="blue" />;
     if (type === "create") return "🎯";
     return "ℹ️";
 };
@@ -37,11 +38,16 @@ export default function Sidebar({ user, onLogout, onNewTask, isMobile }) {
                 <div className="sidebar-logo">
                     {(!collapsed || isMobile) && (
                         <>
-                            <span className="sb-logo-icon">⚡</span>
-                            <span className="sb-logo-text">TaskFlow</span>
+                            <span className="sb-logo-icon flex justify-center items-center">
+
+                                <img className="h-[8vw] w-[8vw] invert" src="./public/tasklogo.png" alt="logo image" />
+
+                            </span>
+
                         </>
                     )}
-                    {collapsed && !isMobile && <span className="sb-logo-icon">⚡</span>}
+                    {collapsed && !isMobile && <span className="sb-logo-icon">  <img className="h-[5vw] w-[5vw]" src="./public/tasksmanage-logo.png" alt="logo image" />
+                    </span>}
                 </div>
 
                 {/* Nav Items */}

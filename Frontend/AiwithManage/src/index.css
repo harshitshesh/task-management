@@ -2,7 +2,7 @@
    TaskFlow — Professional CSS v2
    Dark/Light theme · Glassmorphism · 3D Animations · Sidebar
    ============================================================ */
-
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ─── Reset & Base ─────────────────────────────────────────── */
@@ -51,21 +51,21 @@
 
 /* ─── LIGHT THEME ───────────────────────────────────────────── */
 [data-theme="light"] {
-  --bg: #f0f2f8;
-  --bg2: #e8eaf2;
+  --bg: #ced0d5;
+  --bg2: #93a2df;
   --surface: rgba(255, 255, 255, 0.7);
-  --surface2: rgba(255, 255, 255, 0.9);
+  --surface2: rgba(202, 186, 186, 0.9);
   --surface3: rgba(255, 255, 255, 0.5);
-  --border: rgba(0, 0, 0, 0.08);
+  --border: rgba(51, 39, 39, 0.08);
   --border2: rgba(0, 0, 0, 0.14);
   --text: #1e1b4b;
-  --text2: #4b5563;
-  --text3: #9ca3af;
+  --text2: #2e353f;
+  --text3: #565e6c;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.18);
-  --glow: 0 0 24px rgba(124, 58, 237, .12);
-  --sb-bg: rgba(240, 242, 248, .97);
-  --sb-border: rgba(0, 0, 0, 0.08);
+  --glow: 0 0 24px rgba(160, 113, 242, 0.12);
+  --sb-bg: rgba(183, 188, 202, 0.97);
+  --sb-border: rgba(43, 70, 67, 0.08);
 }
 
 html {
@@ -360,11 +360,8 @@ body {
 
 /* Logo */
 .sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 22px 20px 18px;
-  border-bottom: 1px solid var(--sb-border);
+ 
+  /* border-bottom: 1px solid var(--sb-border); */
   white-space: nowrap;
   overflow: hidden;
 }
@@ -373,6 +370,7 @@ body {
   font-size: 1.4rem;
   filter: drop-shadow(0 0 10px rgba(124, 58, 237, .8));
   flex-shrink: 0;
+
 }
 
 .sb-logo-text {
@@ -578,7 +576,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 10px;
+  padding: 12px 5px;
   border-top: 1px solid var(--sb-border);
 }
 
@@ -856,7 +854,7 @@ body {
 .stats-track {
   display: flex;
   gap: 14px;
-  padding-bottom: 6px;
+  padding: 10px;
   min-width: max-content;
 }
 
@@ -978,7 +976,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 2px;
 }
 
 .tasks-header-top {
@@ -1182,6 +1180,7 @@ mark.highlight {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 18px;
+  margin-top: 10px;
   perspective: 1000px;
 }
 
@@ -1551,6 +1550,7 @@ mark.highlight {
   color: var(--text2);
   white-space: pre-wrap;
   background: var(--surface3);
+  margin-bottom: 10px;
   padding: 20px;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -1689,16 +1689,17 @@ mark.highlight {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--bg);
-  margin: -32px -32px 32px;
-  padding: 32px 32px 20px;
-  border-bottom: 1px solid var(--border);
+ 
+
+  padding: 5px 0.5px 5px 0.5px;
+
   backdrop-filter: blur(10px);
 }
 
 .stats-track-wrapper {
   margin-bottom: 24px;
 }
+
 
 /* ─── Buttons ─────────────────────────────────────────────── */
 .btn-primary {
@@ -1802,7 +1803,7 @@ mark.highlight {
 
 /* ============================================================
    TOAST NOTIFICATIONS
-   ============================================================ */
+ /* ============================================================ */
 .toast-container {
   position: fixed;
   top: 20px;
@@ -1822,32 +1823,48 @@ mark.highlight {
   border-radius: 12px;
   min-width: 280px;
   max-width: 360px;
-  backdrop-filter: blur(20px);
-  border: 1px solid transparent;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, .4);
+
+  /* Glass Base */
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+
   animation: toastIn .4s cubic-bezier(.4, 0, .2, 1);
   pointer-events: all;
+
   font-size: .875rem;
   font-weight: 500;
+  color: #111;
 }
 
+/* ================= DARK MODE SUPPORT ================= */
+@media (prefers-color-scheme: dark) {
+  .toast {
+    background: rgba(20, 20, 20, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    color: #f5f5f5;
+  }
+}
+
+/* ================= TYPE VARIANTS ================= */
+
 .toast-success {
-  background: rgba(16, 185, 129, .15);
-  border-color: rgba(16, 185, 129, .3);
-  color: #6ee7b7;
+  border-left: 4px solid #10b981;
 }
 
 .toast-error {
-  background: rgba(239, 68, 68, .15);
-  border-color: rgba(239, 68, 68, .3);
-  color: #fca5a5;
+  border-left: 4px solid #ef4444;
 }
 
 .toast-info {
-  background: rgba(6, 182, 212, .15);
-  border-color: rgba(6, 182, 212, .3);
-  color: #67e8f9;
+  border-left: 4px solid #06b6d4;
 }
+
+/* ================= ICON ================= */
 
 .toast-icon {
   font-size: .75rem;
@@ -1859,41 +1876,46 @@ mark.highlight {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: white;
 }
 
 .toast-success .toast-icon {
-  background: rgba(16, 185, 129, .25);
+  background: #10b981;
 }
 
 .toast-error .toast-icon {
-  background: rgba(239, 68, 68, .25);
+  background: #ef4444;
 }
 
 .toast-info .toast-icon {
-  background: rgba(6, 182, 212, .25);
+  background: #06b6d4;
 }
+
+/* ================= MESSAGE ================= */
 
 .toast-msg {
   flex: 1;
+  line-height: 1.4;
 }
 
+/* ================= CLOSE BUTTON ================= */
+
 .toast-close {
-  background: transparent;
   border: none;
+  background: transparent;
   cursor: pointer;
   color: inherit;
   opacity: .6;
   font-size: 1.1rem;
   line-height: 1;
   padding: 0 2px;
-  transition: var(--transition);
+  transition: opacity .2s ease;
   pointer-events: all;
 }
 
 .toast-close:hover {
   opacity: 1;
 }
-
 /* ============================================================
    AUTH PAGES
    ============================================================ */
@@ -1953,9 +1975,9 @@ mark.highlight {
   z-index: 1;
   background: rgba(15, 17, 32, .85);
   backdrop-filter: blur(24px);
-  border: 1px solid var(--border2);
+ 
   border-radius: 24px;
-  padding: 44px 40px;
+  padding: 8px 15px;
   width: min(420px, calc(100vw - 32px));
   box-shadow: var(--shadow-lg), var(--glow);
   animation: scaleIn .5s cubic-bezier(.4, 0, .2, 1);
@@ -2071,13 +2093,13 @@ mark.highlight {
   .sidebar {
     width: var(--sb-width-col);
   }
-
+/* 
   .sidebar-logo .sb-logo-text,
   .sb-nav-label,
   .sb-user-info,
   .sb-theme-btn .sb-nav-label {
-    display: none;
-  }
+    /* display: none; */
+  /* } */ 
 
   .sidebar-bottom .sb-collapse-btn {
     display: none;
@@ -2116,9 +2138,7 @@ mark.highlight {
 }
 
 .mobile-sidebar-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
+ 
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -2242,7 +2262,8 @@ mark.highlight {
     margin: -16px -16px 20px;
     padding: 16px 16px 16px;
     top: 64px;
-    /* Adjust for mobile nav */
+    /* Adjust for mobile nav
+     */
   }
 }
 
@@ -2531,13 +2552,10 @@ mark.highlight {
 
 .auth-right {
   flex: 1.2;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(6, 182, 212, 0.05));
-  border-left: 1px solid var(--sb-border);
+ 
   display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
+
+ 
 }
 
 .auth-right::before {
@@ -2559,8 +2577,10 @@ mark.highlight {
 
 .visual-image {
   width: 400px;
-  height: 400px;
-  object-fit: contain;
+  height: 200px;
+  margin-top: 60px;
+
+  
   filter: drop-shadow(0 0 30px rgba(124, 58, 237, 0.3));
   animation: float 6s ease-in-out infinite;
 }

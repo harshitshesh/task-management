@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { signupApi } from "../api/taskApi";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { Mail, User } from "lucide-react";
 
 export default function Signup() {
     const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -35,13 +36,13 @@ export default function Signup() {
             <div className="auth-left">
                 <div className="auth-card">
                     <div className="auth-logo">
-                        <div className="logo-icon">⚡</div>
-                        <h1>TaskFlow</h1>
+                        <div className="logo-icon"><img className="h-[10vw] w-[10vw] invert"      src="./public/tasklogo.png" alt="" /></div>
+                        <h1>TaskManagement</h1>
                         <p>Create your free account</p>
                     </div>
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="input-group">
-                            <span className="input-icon">👤</span>
+                            <span className="input-icon"><User fill="purple" color="purple"/></span>
                             <input
                                 type="text"
                                 placeholder="Username"
@@ -51,7 +52,7 @@ export default function Signup() {
                             />
                         </div>
                         <div className="input-group">
-                            <span className="input-icon">✉</span>
+                            <span className="input-icon"><Mail size={20} color="gray"/></span>
                             <input
                                 type="email"
                                 placeholder="Email Address"
@@ -81,10 +82,10 @@ export default function Signup() {
             </div>
             <div className="auth-right">
                 <div className="animated-visual">
-                    <div className="visual-element el-1">✨ Join the elite</div>
-                    <div className="visual-element el-2">🚀 Faster Workflow</div>
+                    <div className="visual-element el-1">✨ Plan With AI</div>
+                    <div className="visual-element el-2">🚀 Next Level Productivity</div>
                     <div className="visual-image">
-                        <span style={{ fontSize: '150px' }}>⚡</span>
+                        <span className="absolute m- top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="./public/tasksmanage-logo.png" alt="logo image"/></span>
                     </div>
                 </div>
             </div>

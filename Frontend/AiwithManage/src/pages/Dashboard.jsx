@@ -173,9 +173,9 @@ export default function Dashboard() {
             <div className={`dashboard ${mobileMenuOpen ? 'mobile-menu-active' : ''}`}>
                 {/* Mobile Navbar */}
                 <header className="mobile-navbar">
-                    <div className="mobile-nav-left">
-                        <span className="mb-logo-icon">⚡</span>
-                        <span className="mb-logo-text">TaskFlow</span>
+                    <div className="mobile-nav-left flex items-center justify-center">
+                        <span className="mb-logo-icon"><img className="w-[50px] invert" src="./public/tasklogo.png"/></span>
+                       
                     </div>
                     <button
                         className="mobile-nav-toggle"

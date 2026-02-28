@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { chatbotApi } from "../api/taskApi";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
+
 
 export default function Chatbot() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: "assistant", content: "Hi! I'm your TaskFlow assistant. How can I help you today?" }
+        { role: "assistant", content: "Hi! I'm your Taskyn AI assistant. How can I help you today?" }
     ]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -45,7 +48,9 @@ export default function Chatbot() {
         <div className={`chatbot-container ${isOpen ? "open" : ""}`}>
             {!isOpen && (
                 <button className="chat-bubble" onClick={() => setIsOpen(true)}>
-                    <span className="chat-icon">💬</span>
+                    <span className="chat-icon"><DotLottieReact className="w-36"  src="./public/Chatbotanimation.lottie"
+      loop
+      autoplay/></span>
                 </button>
             )}
 
@@ -53,10 +58,10 @@ export default function Chatbot() {
                 <div className="chat-window">
                     <div className="chat-header">
                         <div className="chat-header-info">
-                            <span className="chat-avatar">🤖</span>
+                            <span className="chat-avatar"><img src="./public/ai-assistant.png" alt="" /></span>
                             <div>
-                                <h3>TaskFlow AI</h3>
-                                <p>Online | RAG Powered</p>
+                                <h3>Taskyn AI</h3>
+                                <p>Online </p>
                             </div>
                         </div>
                         <button className="chat-close" onClick={() => setIsOpen(false)}>✕</button>

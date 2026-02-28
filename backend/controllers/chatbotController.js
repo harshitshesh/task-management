@@ -24,7 +24,7 @@ exports.chatWithAI = async (req, res) => {
 
         // 3. Construct System Prompt
         const systemPrompt = `
-      You are an AI assistant for a "Task" management website.
+      You are an Taskyn AI assistant for a "Task" management website.
       Your primary goal is to help users manage their tasks and answer questions about their tasks.
       
       USER CONTEXT:
@@ -57,6 +57,6 @@ exports.chatWithAI = async (req, res) => {
 
     } catch (error) {
         console.error("Chatbot Error:", error);
-        res.status(500).json({ message: "Something went wrong with the AI assistant", error: error.message });
+        res.status(500).json({ message: "Something went wrong with the Taskyn AI assistant", error: error.message });
     }
 };
