@@ -1,4 +1,4 @@
-const BASE = "http://localhost:4000/api";
+const BASE = "https://task-management-k00b.onrender.com/api";
 
 const getToken = () => localStorage.getItem("token");
 
