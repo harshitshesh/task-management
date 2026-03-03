@@ -3,10 +3,15 @@ const express = require("express")
 const cors = require("cors")
 const { dbconnect } = require("./config/db")
 
+const { startScheduler } = require("./jobs/scheduler");
+
 const app = express()
 
 app.use(cors())
 app.use(express.json())
+
+// Initialize Scheduler
+startScheduler();
 
 const authroute = require("./routes/userroutes")
 const taskroute = require("./routes/taskroutes")

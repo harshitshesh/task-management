@@ -31,7 +31,7 @@ export default function Dashboard() {
     const [editTask, setEditTask] = useState(null);
     const [deleteId, setDeleteId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
-    const [form, setForm] = useState({ title: "", description: "", completed: false });
+    const [form, setForm] = useState({ title: "", description: "", completed: false, dueDate: "", alarmEnabled: false });
     const [saving, setSaving] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,7 +48,13 @@ export default function Dashboard() {
         }
     };
 
-    useEffect(() => { fetchTasks(); }, []);
+    useEffect(() => {
+        fetchTasks();
+        // Request notification permission
+        if ("Notification" in window && Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    }, []);
 
     // Derived counts
     const completed = tasks.filter((t) => t.completed).length;
@@ -81,6 +87,44 @@ export default function Dashboard() {
     // Reset to page 1 when filter/search changes
     useEffect(() => { setCurrentPage(1); }, [filter, searchQuery]);
 
+    // Alarm Engine
+    useEffect(() => {
+        const checkAlarms = () => {
+            const now = new Date();
+            tasks.forEach(task => {
+                if (task.completed || !task.dueDate || !task.alarmEnabled) return;
+
+                const dueDate = new Date(task.dueDate);
+                const diffMs = dueDate - now;
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+
+                // 1. Alarm 1 Day Before (within 1-minute window)
+                if (diffMins === 1440) { // 24 hours
+                    triggerAlarm(`Alarm: Task "${task.title}" is due in 1 day!`);
+                }
+
+                // 2. Alarm At Deadline (within 1-minute window)
+                if (diffMins === 0) {
+                    triggerAlarm(`ALERT: Task "${task.title}" deadline reached! ⚠️`);
+                }
+            });
+        };
+
+        const triggerAlarm = (message) => {
+            // Browser Notification
+            if (Notification.permission === "granted") {
+                new Notification("TaskFlow Alarm", { body: message, icon: "/tasklogo.png" });
+            }
+            // Audio Alarm
+            const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+            audio.play().catch(e => console.log("Audio play blocked by browser", e));
+            addToast(message, "info");
+        };
+
+        const interval = setInterval(checkAlarms, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [tasks]);
+
     // Highlight matched text
     const highlight = (text, query) => {
         if (!query.trim()) return text;
@@ -92,13 +136,19 @@ export default function Dashboard() {
 
     const openCreate = () => {
         setEditTask(null);
-        setForm({ title: "", description: "", completed: false });
+        setForm({ title: "", description: "", completed: false, dueDate: "", alarmEnabled: false });
         setShowModal(true);
     };
 
     const openEdit = (task) => {
         setEditTask(task);
-        setForm({ title: task.title, description: task.description, completed: task.completed });
+        setForm({
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            dueDate: task.dueDate ? new Date(task.dueDate).toISOString().slice(0, 16) : "",
+            alarmEnabled: task.alarmEnabled || false
+        });
         setShowModal(true);
     };
 
@@ -150,7 +200,20 @@ export default function Dashboard() {
         const task = tasks.find((t) => t._id === deleteId);
         try {
             await deleteTaskApi(deleteId);
-            setTasks((prev) => prev.filter((t) => t._id !== deleteId));
+            setTasks((prev) => {
+                const updated = prev.filter((t) => t._id !== deleteId);
+                // Pagination Fix: If current page becomes empty, go back
+                const newFiltered = updated.filter(t => {
+                    if (filter === "Pending") return !t.completed;
+                    if (filter === "Completed") return t.completed;
+                    return true;
+                });
+                const newTotalPages = Math.ceil(newFiltered.length / ITEMS_PER_PAGE);
+                if (currentPage > newTotalPages && newTotalPages > 0) {
+                    setCurrentPage(newTotalPages);
+                }
+                return updated;
+            });
             addToast("Task deleted 🗑️", "success");
             addNotification("Task deleted: " + (task?.title || ""), "delete");
         } catch {
@@ -166,6 +229,77 @@ export default function Dashboard() {
         navigate("/login");
     };
 
+    const getTimeRemaining = (dueDate) => {
+        if (!dueDate) return null;
+        const total = Date.parse(dueDate) - Date.now();
+        if (total <= 0) return "Time's up! ❌";
+
+        const seconds = Math.floor((total / 1000) % 60);
+        const minutes = Math.floor((total / 1000 / 60) % 60);
+        const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        const days = Math.floor(total / (1000 * 60 * 60 * 24));
+
+        if (days > 0) return `${days}d ${hours}h left`;
+        if (hours > 0) return `${hours}h ${minutes}m left`;
+        return `${minutes}m ${seconds}s left`;
+    };
+
+    // Greeting texts for infinite loop
+    const greetings = [
+        `Good day, ${user?.username || 'User'} `,
+        "Let's crush those tasks! ",
+        "Small steps lead to big wins. ",
+        "Stay focused and productive. "
+    ];
+    const [greetingIndex, setGreetingIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setGreetingIndex((prev) => (prev + 1) % greetings.length);
+        }, 3000);
+        return () => clearInterval(interval);
+    }, [greetings.length]);
+
+    // Stats cards for infinite slider
+    const statCards = [
+        <div key="total" className="stat-card stat-total">
+            <div className="stat-icon-3d">📋</div>
+            <div className="stat-info">
+                <span className="stat-num">{tasks.length}</span>
+                <span className="stat-label">Total Tasks</span>
+            </div>
+        </div>,
+        <div key="pending" className="stat-card stat-pending">
+            <div className="stat-icon-3d">⏳</div>
+            <div className="stat-info">
+                <span className="stat-num">{pending}</span>
+                <span className="stat-label">Pending</span>
+            </div>
+        </div>,
+        <div key="done" className="stat-card stat-done">
+            <div className="stat-icon-3d">✅</div>
+            <div className="stat-info">
+                <span className="stat-num">{completed}</span>
+                <span className="stat-label">Completed</span>
+            </div>
+        </div>,
+        <div key="progress" className="stat-card stat-progress">
+            <div className="stat-icon-3d">📈</div>
+            <div className="stat-info stat-info-wide">
+                <div className="stat-progress-row">
+                    <span className="stat-num">{completionPct}%</span>
+                    <span className="stat-label">Done</span>
+                </div>
+                <div className="progress-bar-track">
+                    <div
+                        className="progress-bar-fill"
+                        style={{ width: `${completionPct}%` }}
+                    />
+                </div>
+            </div>
+        </div>
+    ];
+
     return (
         <div className="app-layout">
             <Sidebar user={user} onLogout={handleLogout} onNewTask={openCreate} />
@@ -174,14 +308,14 @@ export default function Dashboard() {
                 {/* Mobile Navbar */}
                 <header className="mobile-navbar">
                     <div className="mobile-nav-left flex items-center justify-center">
-                        <span className="mb-logo-icon"><img className="w-[50px] invert" src="./public/tasklogo.png"/></span>
-                       
+                        <span className="mb-logo-icon"><img className="w-[50px] invert" src="./public/tasklogo.png" /></span>
+
                     </div>
                     <button
                         className="mobile-nav-toggle"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        onClick={() => setMobileMenuOpen(true)}
                     >
-                        {mobileMenuOpen ? "✕" : "☰"}
+                        ☰
                     </button>
                 </header>
 
@@ -211,7 +345,11 @@ export default function Dashboard() {
                     <div className="dashboard-hero-area">
                         <div className="stats-header">
                             <div className="hero-section">
-                                <h2>Good day, <span className="gradient-text">{user?.username}</span> 👋</h2>
+                                <div className="hero-greeting-container">
+                                    <h2 key={greetingIndex} className="fade-slide-up gradient-text m-0">
+                                        {greetings[greetingIndex]}
+                                    </h2>
+                                </div>
                                 <p>Here's your task overview for today</p>
                             </div>
                             <button
@@ -222,45 +360,14 @@ export default function Dashboard() {
                             </button>
                         </div>
 
-                        {/* Stats — compact scrollable row */}
+                        {/* Stats — Infinite Slider Row */}
                         <div className={`stats-track-wrapper ${showStats ? '' : 'hidden'}`}>
-                            <div className="stats-track">
-                                <div className="stat-card stat-total">
-                                    <div className="stat-icon-3d">📋</div>
-                                    <div className="stat-info">
-                                        <span className="stat-num">{tasks.length}</span>
-                                        <span className="stat-label">Total Tasks</span>
-                                    </div>
-                                </div>
-                                <div className="stat-card stat-pending">
-                                    <div className="stat-icon-3d">⏳</div>
-                                    <div className="stat-info">
-                                        <span className="stat-num">{pending}</span>
-                                        <span className="stat-label">Pending</span>
-                                    </div>
-                                </div>
-                                <div className="stat-card stat-done">
-                                    <div className="stat-icon-3d">✅</div>
-                                    <div className="stat-info">
-                                        <span className="stat-num">{completed}</span>
-                                        <span className="stat-label">Completed</span>
-                                    </div>
-                                </div>
-                                {/* Progress card */}
-                                <div className="stat-card stat-progress">
-                                    <div className="stat-icon-3d">📈</div>
-                                    <div className="stat-info stat-info-wide">
-                                        <div className="stat-progress-row">
-                                            <span className="stat-num">{completionPct}%</span>
-                                            <span className="stat-label">Done</span>
-                                        </div>
-                                        <div className="progress-bar-track">
-                                            <div
-                                                className="progress-bar-fill"
-                                                style={{ width: `${completionPct}%` }}
-                                            />
-                                        </div>
-                                    </div>
+                            <div className="stats-slider-container">
+                                <div className="stats-track-infinite">
+                                    {statCards}
+                                    {/* Duplicating cards for infinite effect */}
+                                    {statCards}
+                                    {statCards}
                                 </div>
                             </div>
                         </div>
@@ -368,6 +475,12 @@ export default function Dashboard() {
                                                                 })}
                                                             </span>
                                                         </div>
+                                                        {!task.completed && task.dueDate && (
+                                                            <div className="task-time-left">
+                                                                ⏳ {getTimeRemaining(task.dueDate)}
+                                                                {task.alarmEnabled && <span className="alarm-icon-mini" title="Alarm Enabled"> 🔔</span>}
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     <div className="task-card-body">
@@ -444,6 +557,24 @@ export default function Dashboard() {
                                         required
                                         rows={4}
                                     />
+                                </div>
+                                <div className="form-group">
+                                    <label>Deadline (Optional)</label>
+                                    <input
+                                        type="datetime-local"
+                                        value={form.dueDate}
+                                        onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                                        className="modal-date-picker"
+                                    />
+                                </div>
+                                <div className="form-check">
+                                    <input
+                                        type="checkbox"
+                                        id="alarmEnabled"
+                                        checked={form.alarmEnabled}
+                                        onChange={(e) => setForm({ ...form, alarmEnabled: e.target.checked })}
+                                    />
+                                    <label htmlFor="alarmEnabled">🔔 Enable Browser Alarm (Sound + Popup)</label>
                                 </div>
                                 <div className="form-check">
                                     <input
