@@ -19,6 +19,7 @@ exports.chatWithAI = async (req, res) => {
             created: t.created
         }));
         // 2. Initialize Gemini
+        console.log(process.env.GEMINI_API_KEY)
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
