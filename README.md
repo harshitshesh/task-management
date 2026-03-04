@@ -1,15 +1,15 @@
-🚀 # Taskyn
+🚀 # *Taskyn*
 
 **Smart & Secure Task Management Web Application**
 
 Taskyn is a modern, fully responsive task management web application designed to help users efficiently create, track, and manage tasks with advanced security, automated alerts, and smart assistance.
 
-🌐 ##Live Demo
+🌐 ## Live Demo
 
 🔗 Live URL: mellifluous-taiyaki-9e2a65.netlify.app
 
 
-📌 ##Overview
+📌 ## Overview
 
 Taskyn provides a complete productivity solution with:
 
