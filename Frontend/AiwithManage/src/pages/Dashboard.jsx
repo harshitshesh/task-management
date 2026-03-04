@@ -158,8 +158,14 @@ export default function Dashboard() {
         e.preventDefault();
         setSaving(true);
         try {
+            // Convert local time string from datetime-local to ISO string for the backend
+            const payload = {
+                ...form,
+                dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : ""
+            };
+
             if (editTask) {
-                const data = await updateTaskApi(editTask._id, form);
+                const data = await updateTaskApi(editTask._id, payload);
                 if (data._id) {
                     setTasks((prev) => prev.map((t) => (t._id === data._id ? data : t)));
                     addToast("Task updated successfully ✏️", "success");
@@ -167,7 +173,7 @@ export default function Dashboard() {
                     closeModal();
                 } else addToast(data.message || "Update failed", "error");
             } else {
-                const data = await createTaskApi(form);
+                const data = await createTaskApi(payload);
                 if (data._id) {
                     setTasks((prev) => [...prev, data]);
                     addToast("Task created! 🎯", "success");
@@ -233,6 +239,7 @@ export default function Dashboard() {
         if (!dueDate) return null;
         const total = Date.parse(dueDate) - Date.now();
         if (total <= 0) return "Time's up! ❌";
+
 
         const seconds = Math.floor((total / 1000) % 60);
         const minutes = Math.floor((total / 1000 / 60) % 60);
