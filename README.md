@@ -1,15 +1,15 @@
-🚀 # *Taskyn*
+# 🚀 **Taskyn**
 
-**Smart & Secure Task Management Web Application**
+## **Smart & Secure Task Management Web Application**
 
 Taskyn is a modern, fully responsive task management web application designed to help users efficiently create, track, and manage tasks with advanced security, automated alerts, and smart assistance.
 
-🌐 ## Live Demo
+## 🌐  Live Demo
 
 🔗 Live URL: mellifluous-taiyaki-9e2a65.netlify.app
 
 
-📌 ## Overview
+##  📌 Overview
 
 Taskyn provides a complete productivity solution with:
 
@@ -28,7 +28,7 @@ Taskyn provides a complete productivity solution with:
 It ensures users never miss deadlines and can manage tasks seamlessly across devices.
 
 ✨ Key Features
-🔐 ##Authentication & Security
+## 🔐 Authentication & Security
 
 Secure User Registration & Login
 
@@ -40,7 +40,7 @@ Token-based authentication
 
 Session validation
 
-📝 ##Task Management
+##  📝 Task Management
 
 Create new tasks
 
@@ -58,7 +58,7 @@ Filter tasks (Completed / Pending / All)
 
 Search tasks instantly
 
-⏰ ##Smart Deadline Alert System
+## ⏰ Smart Deadline Alert System
 
 Users can set a deadline for tasks
 
@@ -72,7 +72,7 @@ Real-time toast alert is triggered inside the app
 
 This ensures zero manual tracking required.
 
-🔔 ##Notification System
+## 🔔 Notification System
 
 Fully managed toast-based popup notifications
 
@@ -102,7 +102,7 @@ Context-aware limited response logic
 
 Helps users navigate platform features
 
-🎨 ##UI/UX Features
+## 🎨 UI/UX Features
 
 Smooth animations
 
@@ -114,8 +114,8 @@ Dark Mode / Light Mode toggle
 
 Intuitive dashboard layout
 
-🛠 #Tech Stack
-###Frontend
+## 🛠 Tech Stack
+### Frontend
 
 HTML5
 
@@ -131,7 +131,7 @@ Toast Notification Library
 
 Animation Library
 
-###Backend
+### Backend
 
 Node.js
 
