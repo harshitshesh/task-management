@@ -85,7 +85,7 @@ export default function Signup() {
                     <div className="visual-element el-1">✨ Plan With AI</div>
                     <div className="visual-element el-2">🚀 Next Level Productivity</div>
                     <div className="visual-image">
-                        <span className="absolute m- top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="/tasksmanage-logo.png" alt="logo image"/></span>
+                        <span className="absolute  top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="/tasksmanage-logo.png" alt="logo image"/></span>
                     </div>
                 </div>
             </div>
