@@ -36,7 +36,7 @@ export default function Login() {
             <div className="auth-left">
                 <div className="auth-card">
                     <div className="auth-logo">
-                        <div className="logo-icon"><img className="h-[10vw] w-[10vw] invert"  src="./public/tasklogo.png" alt="logo image"/></div>
+                        <div className="logo-icon"><img className="h-[10vw] w-[10vw] invert"  src="/tasklogo.png" alt="logo image"/></div>
                         <h1>TaskManagement</h1>
                         <p>Sign in to manage your tasks</p>
                     </div>
@@ -76,7 +76,7 @@ export default function Login() {
                     <div className="visual-element el-1">🚀 Work Smarter Daily</div>
                     <div className="visual-element el-2">📅 Master your Day</div>
                     <div className="visual-image">
-                        <span className="absolute m- top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="./public/tasksmanage-logo.png" alt="logo image"/></span>
+                        <span className="absolute m- top-[100%] left-[94%] w-80 " style={{ fontSize: '150px' }}><img className="h-[18vw] w-[18vw] mt-28"  src="/tasksmanage-logo.png" alt="logo image"/></span>
                     </div>
                 </div>
             </div>

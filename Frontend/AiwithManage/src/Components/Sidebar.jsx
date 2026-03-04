@@ -40,13 +40,13 @@ export default function Sidebar({ user, onLogout, onNewTask, isMobile }) {
                         <>
                             <span className="sb-logo-icon flex justify-center items-center">
 
-                                <img className="h-[8vw] w-[8vw] invert" src="./public/tasklogo.png" alt="logo image" />
+                                <img className="h-[8vw] w-[8vw] invert" src="/tasklogo.png" alt="logo image" />
 
                             </span>
 
                         </>
                     )}
-                    {collapsed && !isMobile && <span className="sb-logo-icon">  <img className="h-[5vw] w-[5vw]" src="./public/tasksmanage-logo.png" alt="logo image" />
+                    {collapsed && !isMobile && <span className="sb-logo-icon">  <img className="h-[5vw] w-[5vw]" src="/tasksmanage-logo.png" alt="logo image" />
                     </span>}
                 </div>
 

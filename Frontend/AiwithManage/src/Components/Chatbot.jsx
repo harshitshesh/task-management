@@ -48,7 +48,7 @@ export default function Chatbot() {
         <div className={`chatbot-container ${isOpen ? "open" : ""}`}>
             {!isOpen && (
                 <button className="chat-bubble" onClick={() => setIsOpen(true)}>
-                    <span className="chat-icon"><DotLottieReact className="w-36"  src="./public/Chatbotanimation.lottie"
+                    <span className="chat-icon"><DotLottieReact className="w-36"  src="/Chatbotanimation.lottie"
       loop
       autoplay/></span>
                 </button>
@@ -58,7 +58,7 @@ export default function Chatbot() {
                 <div className="chat-window">
                     <div className="chat-header">
                         <div className="chat-header-info">
-                            <span className="chat-avatar"><img src="./public/ai-assistant.png" alt="" /></span>
+                            <span className="chat-avatar"><img src="/ai-assistant.png" alt="" /></span>
                             <div>
                                 <h3>Taskyn AI</h3>
                                 <p>Online </p>

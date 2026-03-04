@@ -315,7 +315,7 @@ export default function Dashboard() {
                 {/* Mobile Navbar */}
                 <header className="mobile-navbar">
                     <div className="mobile-nav-left flex items-center justify-center">
-                        <span className="mb-logo-icon"><img className="w-[50px] invert" src="./public/tasklogo.png" /></span>
+                        <span className="mb-logo-icon"><img className="w-[50px] invert" src="/tasklogo.png" /></span>
 
                     </div>
                     <button
