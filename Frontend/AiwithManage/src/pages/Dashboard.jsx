@@ -8,6 +8,7 @@ import {
     createTaskApi,
     updateTaskApi,
     deleteTaskApi,
+    saveSubscriptionApi,
 } from "../api/taskApi";
 import Sidebar from "../Components/Sidebar";
 import Pagination from "../Components/Pagination";
@@ -50,10 +51,34 @@ export default function Dashboard() {
 
     useEffect(() => {
         fetchTasks();
-        // Request notification permission
-        if ("Notification" in window && Notification.permission === "default") {
-            Notification.requestPermission();
-        }
+        // Request notification permission and register Service Worker
+        const setupNotifications = async () => {
+            if ("Notification" in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === "granted" && "serviceWorker" in navigator) {
+                    try {
+                        const registration = await navigator.serviceWorker.register("/service-worker.js");
+                        console.log("Service Worker registered");
+
+                        // Subscribe to Push Notifications
+                        let subscription = await registration.pushManager.getSubscription();
+                        if (!subscription) {
+                            const vapidPublicKey = "BHK64zFI0pFptPvfteUaODt7SUwe7pFtUZPXD5I9056lurrtdYQFCrZ_aX_EDMzpx_vM_TryeC12R92ZBS01_Fk";
+                            subscription = await registration.pushManager.subscribe({
+                                userVisibleOnly: true,
+                                applicationServerKey: vapidPublicKey
+                            });
+                        }
+
+                        // Save subscription to backend
+                        await saveSubscriptionApi(subscription);
+                    } catch (err) {
+                        console.error("Service Worker/Push subscription failed:", err);
+                    }
+                }
+            }
+        };
+        setupNotifications();
     }, []);
 
     // Derived counts
@@ -98,25 +123,31 @@ export default function Dashboard() {
                 const diffMs = dueDate - now;
                 const diffMins = Math.floor(diffMs / (1000 * 60));
 
-                // 1. Alarm 1 Day Before (within 1-minute window)
-                if (diffMins === 1440) { // 24 hours
-                    triggerAlarm(`Alarm: Task "${task.title}" is due in 1 day!`);
+                // 1. Alarm 5 Minutes Before (Foreground Alarm)
+                if (diffMins === 5) {
+                    triggerAlarm(`Upcoming: Task "${task.title}" is due in 5 minutes! 🔔`, true);
                 }
 
-                // 2. Alarm At Deadline (within 1-minute window)
+                // 2. Alarm At Deadline
                 if (diffMins === 0) {
-                    triggerAlarm(`ALERT: Task "${task.title}" deadline reached! ⚠️`);
+                    triggerAlarm(`ALERT: Task "${task.title}" deadline reached! ⚠️`, true);
                 }
             });
         };
 
-        const triggerAlarm = (message) => {
+        const triggerAlarm = (message, isLong = false) => {
             // Browser Notification
             if (Notification.permission === "granted") {
                 new Notification("TaskFlow Alarm", { body: message, icon: "/tasklogo.png" });
             }
             // Audio Alarm
+            // Using a longer alarm sound and looping if it's a critical one
             const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+            if (isLong) {
+                audio.loop = true;
+                // Stop after 30 seconds to not be annoying indefinitely
+                setTimeout(() => { audio.pause(); }, 30000);
+            }
             audio.play().catch(e => console.log("Audio play blocked by browser", e));
             addToast(message, "info");
         };

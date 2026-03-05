@@ -62,3 +62,10 @@ export const chatbotApi = (message) =>
     headers: headers(true),
     body: JSON.stringify({ message }),
   }).then((r) => r.json());
+
+export const saveSubscriptionApi = (subscription) =>
+  fetch(`${BASE}/taskmanage/save-subscription`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ subscription }),
+  }).then((r) => r.json());
