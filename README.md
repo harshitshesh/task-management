@@ -6,7 +6,7 @@ Taskyn is a modern, fully responsive task management web application designed to
 
 ## 🌐  Live Demo
 
-🔗 [Live Demo](https://mellifluous-taiyaki-9e2a65.netlify.app)
+🔗 [Live Demo](incomparable-sfogliatella-3a8819.netlify.app)
 
 
 ##  📌 Overview
